@@ -48,3 +48,4 @@ export function reasonFor(domain, profile = {}, message = '') {
   const matched = domain.capabilities.find(cap=>text.includes(cap.toLowerCase()));
   return matched ? `Connects with what you shared about ${matched}.` : `A useful starting point for ${domain.category.toLowerCase()}.`;
 }
+

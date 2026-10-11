@@ -1,6 +1,6 @@
 # Mentor API contract
 
-The React assistant talks to the Express mentor API through the same-origin `/api` path. Vite proxies that path to `http://127.0.0.1:8787` during development.
+The React assistant talks to the Express mentor API through the same-origin `/api` path. Vite proxies that path to `http://127.0.0.1:8788` during development.
 
 ## Request
 
@@ -43,3 +43,4 @@ Keep model calls in `server/services/geminiClient.js`, context filtering in `ser
 ## Production security
 
 The current API binds to loopback for local development and has no user-token verification. Before making it public, verify Supabase access tokens (or another trusted identity) on the server and apply authenticated rate limits. An origin allowlist/CORS alone does not stop direct requests.
+

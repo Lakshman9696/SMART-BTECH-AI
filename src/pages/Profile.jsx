@@ -25,3 +25,4 @@ export default function Profile({profile,saveProfile,profileLoading=false,profil
  {(error||profileError)&&<p role="alert" className="form-error">{error||profileError}</p>}<div className="question-actions">{step>0?<button className="button-quiet" onClick={()=>setStep(step-1)}>← Back</button>:<Link to="/" className="button-quiet">Not now</Link>}<div className="action-right">{current.optional&&<button className="button-quiet" onClick={()=>step===steps.length-1?next():(setStep(step+1))}>Skip</button>}<button className="button-primary" disabled={saving||profileLoading} onClick={next}>{saving?'Saving securely…':step===steps.length-1?'Finish profile':'Continue'} <span>→</span></button></div></div>
  </>}</section></div><footer className="site-footer"><span><b>Smart Engineer AI<span className="brand-dot">.</span></b> &nbsp;From Confused Student to Placed Engineer.</span><span>YOUR PROFILE CAN BE EDITED AT ANY TIME. &nbsp;✳</span></footer></div>
 }
+

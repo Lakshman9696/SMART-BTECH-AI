@@ -20,5 +20,6 @@ app.use((error, _req, res, _next) => {
   if (status >= 500) console.error('Mentor API error:', error.code || error.message);
   res.status(status).json({ error: status === 503 ? error.message : status === 429 ? 'Too many requests. Please wait a moment and try again.' : 'The mentor could not respond right now. Please try again shortly.', code: error.code || undefined });
 });
-const port = Number(process.env.API_PORT || 8787);
+const port = Number(process.env.API_PORT || 8788);
 app.listen(port, '127.0.0.1', () => console.log(`Smart Engineer AI API listening on http://127.0.0.1:${port}`));
+

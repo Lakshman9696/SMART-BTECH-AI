@@ -45,3 +45,4 @@ The chatbot reads domain capabilities and IDs from the registry. Add a domain's 
 
 The questionnaire uses `src/services/profileRepository.js` and currently saves in browser local storage. Preserve its `load` and `save` behavior when switching to the authenticated user's API-backed profile. The current project specification recommends a Node/Express API and MongoDB Atlas. Keep database credentials on the server; do not put secrets in `VITE_*` variables.
 
+

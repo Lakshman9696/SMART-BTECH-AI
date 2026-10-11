@@ -11,7 +11,7 @@ Smart Engineer AI is a React + Vite student platform with a progressive profile,
 5. Run `npm.cmd run dev` from PowerShell (or `npm run dev` in shells that allow npm scripts) and open the Vite address. This starts Vite and the Express API together.
 6. Run `npm.cmd test` and `npm.cmd run build` to check the app.
 
-The frontend proxies `/api` to the local Express API at port 8787. `GEMINI_MODEL` defaults to `gemini-3.8-flash`; set `API_PORT` and comma-separated `API_ALLOWED_ORIGINS` for the server environment as needed.
+The frontend proxies `/api` to the local Express API at port 8788. `GEMINI_MODEL` defaults to `gemini-3.8-flash`; set `API_PORT` and comma-separated `API_ALLOWED_ORIGINS` for the server environment as needed.
 
 ## Student progress roadmap
 
@@ -50,3 +50,4 @@ The current Express API binds to `127.0.0.1` and is intended for local developme
 ## Source documentation
 
 The Smart BTech AI specification PDF referenced in the request was not present in the workspace. This implementation follows the pasted requirements and the existing project structure. The descriptions and capabilities for the supplied domain names are starter metadata until their detailed source documents are connected.
+

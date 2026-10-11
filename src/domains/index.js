@@ -4,3 +4,4 @@
  */
 const modules = {};
 export const getDomainModule = id => modules[id] || null;
+

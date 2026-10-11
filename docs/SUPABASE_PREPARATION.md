@@ -44,3 +44,4 @@ Apply and review policies in the Supabase project before storing real student da
 `src/data/domains.js` exports `recommendDomains(text, profile)`, the current local demo matcher. Keep the `Assistant` component calling a small service interface; replace the local implementation with a request to a protected server endpoint when one exists. The central assistant uses registry IDs/routes and does not depend on domain-specific code.
 
 Official setup references: [Supabase React quickstart](https://supabase.com/docs/guides/getting-started/quickstarts/reactjs), [Row Level Security](https://supabase.com/docs/guides/database/postgres/row-level-security), and [API keys](https://supabase.com/docs/guides/getting-started/api-keys).
+
