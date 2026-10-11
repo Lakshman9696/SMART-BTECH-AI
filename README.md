@@ -13,18 +13,19 @@ Smart Engineer AI is a React + Vite student platform with a progressive profile,
 
 The frontend proxies `/api` to the local Express API at port 8788. `GEMINI_MODEL` defaults to `gemini-3.8-flash`; set `API_PORT` and comma-separated `API_ALLOWED_ORIGINS` for the server environment as needed.
 
-## Student progress roadmap
+## Student profile and action plan
 
-- My Progress can create an eight-task, four-stage starter B.Tech roadmap. New tasks start as to do; completion is calculated from task statuses, not seeded percentages. Year applicability follows the profile's current year.
-- Task status and roadmap details are stored inside the existing `student_profiles.profile` JSON. The existing owner-scoped RLS policy protects them, so no new table or database is required. In local demo mode, the existing browser profile record is used. Supabase users must sign in to save.
-- Next steps are ordered using in-progress status, task priority, year stage and matches to the student's profile. Completed tasks are excluded.
-- The central mentor receives the allowlisted profile and up to 40 structured task statuses when each message is sent. It does not persist chat or task data separately.
+- The profile uses an adaptive one-question-at-a-time flow covering degree, branch, year, optional semester, skills, programming experience, practical work, interests, goal, available time and learning preference. Previously answered questions are skipped when an incomplete profile is resumed. Optional support details are asked only after explicit opt-in.
+- Incomplete answers are saved after each step. When Supabase is configured, an authenticated student's profile and tasks are stored together in that student's existing `student_profiles.profile` JSON row, protected by owner-scoped RLS. No new table or database is required. In local demo mode, the existing browser profile record is used; this does not sync across devices.
+- Completing the profile creates three goal-specific starter actions once branch and year are available; My Progress also offers a create-plan path if needed. Tasks start as pending and include a registered domain, reason, estimated effort and completion criteria. Task status changes are saved to the same profile record. No completion percentage is seeded.
+- Overall progress is calculated from saved task statuses. Recommendations prioritize in-progress work, then priority and profile relevance, and exclude completed tasks.
+- The central mentor receives an allowlisted profile and up to 40 valid, structured task statuses with each message. Support needs, challenges and requested help are sent only when the profile records explicit consent. Chat is not persisted separately.
 
 ## Mentor behavior and privacy
 
 - `server/intents/registry.js` and `classifyIntent.js` route messages across career, skills, programming, interviews, resumes, internships, exams, projects, learning resources and general questions.
 - `followUps.js` asks only for details that affect the answer. Follow-up state is sent with current chat messages; a new topic takes precedence over a pending follow-up.
-- `prepareContext.js` allows only degree, branch, year, skills, interests, career goals, challenges and requested help from the profile. It drops email and other fields and limits chat context to the most recent 12 messages.
+- `prepareContext.js` allows only relevant study, experience, goal and learning-preference fields from the profile. It drops email and identity fields, and sends optional support needs only after explicit opt-in. Chat context is limited to the most recent 12 messages.
 - The browser holds chat messages in memory for the current page session. The API is stateless and does not store chat messages. A message and the allowlisted profile fields are sent to Gemini when the student submits it.
 - The API applies an origin allowlist, request size limits and per-IP rate limiting. Provider keys stay on the server.
 - For SQL learning, the mentor can cite the PostgreSQL tutorial and SQLBolt resources supplied in `server/knowledge/domainKnowledge.js`. Other sources are not invented.
@@ -39,7 +40,7 @@ Account Center supports Supabase email/password sign-up, sign-in, password reset
 
 ## Domain integration
 
-The centralized registry in `src/data/domains.js` gives each domain a stable `id`, `name`, `description`, `capabilities`, `route`, `enabled` flag and `status`. Fourteen supplied domains are currently listed; the source catalog did not include domain 10 or 12. Entries are planned previews until a working dedicated module is connected.
+The centralized registry in `src/data/domains.js` gives each domain a stable `id`, `name`, `description`, `capabilities`, `route`, `supportedIntents`, `enabled` flag, `status` and integration metadata. Fourteen supplied domains are currently listed; the source catalog did not include domain 10 or 12. Entries are planned previews until a working dedicated module is connected. The server intent map reads each domain's `supportedIntents`, so a new domain can join existing assistant intents through registry configuration.
 
 To add a domain, create a component in `src/domains/<id>/` that accepts `{ profile, domain }`, register it in `src/domains/index.js`, and add its metadata to the centralized registry. Keep its ID and route stable once published. The mentor refers to registry IDs and does not need domain-specific chatbot changes. Set `status: 'ready'` only after the domain task is functional. See [`docs/DOMAIN_INTEGRATION.md`](docs/DOMAIN_INTEGRATION.md).
 
