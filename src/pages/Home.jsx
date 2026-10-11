@@ -4,6 +4,7 @@ import { Icon } from '../components/Icon';
 import { DomainCard } from '../components/DomainCard';
 import { enabledDomains, recommendDomains, reasonFor } from '../data/domains';
 import { careerStages, studentModules } from '../data/studentModules';
+import ActionPlanBar from '../components/ActionPlanBar';
 
 function ModuleCard({ module, index }) {
   return <Link className={`module-card accent-${module.accent}`} to={module.route} style={{ '--card-index': index }}>
@@ -29,7 +30,7 @@ function RecommendedAction({ profile }) {
 function Roadmap() {
   return <section className="panel roadmap-panel">
     <div className="panel-heading"><div><span className="section-kicker">YOUR CAREER ROADMAP</span><h2>One step at a time</h2></div><Link className="text-link" to="/domains/career">Open Career Navigator <Icon name="arrow" size={14}/></Link></div>
-    <p className="panel-lede">A suggested B.Tech journey. Your personal progress will appear when activity tracking is connected.</p>
+    <p className="panel-lede">A suggested four-year B.Tech journey. Saved task progress appears in My Action Plan and My Progress.</p>
     <div className="roadmap-track">{careerStages.map((stage, index) => <div className="roadmap-step" key={stage.year}>
       <div className="roadmap-marker"><span>{String(index + 1).padStart(2, '0')}</span></div>
       <div className="roadmap-year">{stage.year}</div><h3>{stage.title}</h3><p>{stage.detail}</p>
@@ -41,7 +42,7 @@ function Roadmap() {
 function ProgressPanel() {
   return <section className="panel progress-panel">
     <div className="panel-heading"><div><span className="section-kicker">SKILL PROGRESS</span><h2>Your growth, as it happens</h2></div><span className="panel-icon"><Icon name="layers" size={18}/></span></div>
-    <div className="empty-progress"><span className="empty-progress-icon"><Icon name="check" size={18}/></span><div><b>No learning activity yet</b><p>Skills and milestones will appear here once your activity can be saved.</p></div></div>
+    <div className="empty-progress"><span className="empty-progress-icon"><Icon name="check" size={18}/></span><div><b>No skill-specific activity saved yet</b><p>Completing action-plan tasks updates roadmap progress. Lesson tracking will appear when a connected domain supports it.</p></div></div>
     <Link className="inline-link" to="/domains/skill-job-analysis">Explore the Skills Hub <Icon name="arrow" size={14}/></Link>
   </section>;
 }
@@ -53,7 +54,7 @@ function MilestonesPanel() {
   </section>;
 }
 
-export default function Home({ profile }) {
+export default function Home({ profile, saveProfile, profileLoading, user, secureStorage }) {
   const location = useLocation();
   const mentorPrompt = new URLSearchParams(location.search).get('mentorPrompt') || '';
   const firstName = profile?.name?.trim()?.split(/\s+/)[0];
@@ -67,7 +68,9 @@ export default function Home({ profile }) {
       <Link to="/profile" className="profile-action"><span className="profile-action-avatar">{firstName?.[0]?.toUpperCase() || 'S'}</span><span><b>{firstName || 'Your profile'}</b><small>{profile?.branch || 'Add your study details'}</small></span><Icon name="chevron" size={16}/></Link>
     </section>
 
-      <section className="assistant-section"><div className="assistant-section-heading"><div><span className="section-kicker">YOUR AI COMPANION</span><h2>What are we working on today?</h2><p>Ask about careers, skills, exams or placements.</p></div><span className="assistant-status"><i/> Mentor API</span></div><Assistant profile={profile} progressTasks={profile?.progressTasks||[]} initialPrompt={mentorPrompt} className="dashboard-assistant"/></section>
+      <section className="assistant-section"><div className="assistant-section-heading"><div><span className="section-kicker">YOUR AI COMPANION</span><h2>What are we working on today?</h2><p>Ask about careers, skills, exams or placements.</p></div><span className="assistant-status"><i/> Connection status below</span></div><Assistant profile={profile} progressTasks={profile?.progressTasks||[]} initialPrompt={mentorPrompt} className="dashboard-assistant"/></section>
+
+    <ActionPlanBar profile={profile} saveProfile={saveProfile} profileLoading={profileLoading} user={user} secureStorage={secureStorage}/>
 
     <section className="modules-section">
       <div className="section-heading"><div><span className="section-kicker">YOUR STUDENT TOOLKIT</span><h2>Explore your growth modules</h2></div><Link className="text-link" to="/domains">All {enabledDomains().length} domains <Icon name="arrow" size={14}/></Link></div>
@@ -84,3 +87,4 @@ export default function Home({ profile }) {
     <footer className="site-footer"><span><b>Smart Engineer AI</b> &nbsp;Guidance for your next step.</span><span>DEMO GUIDANCE · CHECK OFFICIAL SOURCES FOR CURRENT FACTS</span></footer>
   </div>;
 }
+
