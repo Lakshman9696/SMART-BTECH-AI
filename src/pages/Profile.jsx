@@ -1,28 +1,149 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-const blank = { degree:'B.Tech', branch:'', year:'', skills:[], interests:'', careerGoals:'', challenges:'', helpNeeded:'' };
-const steps = [
- { title:'Your studies', subtitle:'A little context helps us make relevant recommendations.', optional:false },
- { title:'Skills you’re building', subtitle:'Choose any that feel relevant right now.', optional:true },
- { title:'What interests you?', subtitle:'Subjects, activities, or topics you enjoy.', optional:true },
- { title:'Where would you like to go?', subtitle:'Share a career direction or goal, if you have one.', optional:true },
- { title:'What would help right now?', subtitle:'Tell us what feels difficult and what kind of support you want.', optional:true },
-];
-const skills = ['Programming','Problem solving','Communication','Design','Research','Teamwork','Mathematics','Hands-on building'];
-export default function Profile({profile,saveProfile,profileLoading=false,profileError=null,user=null,secureStorage=false}) {
- const [form,setForm]=useState({...blank,...profile}),[step,setStep]=useState(0),[saved,setSaved]=useState(Boolean(profile?.complete)),[error,setError]=useState(''),[saving,setSaving]=useState(false);
- useEffect(()=>{if(profile){setForm({...blank,...profile});setSaved(Boolean(profile.complete));}else if(secureStorage){setForm({...blank});setSaved(false);}},[profile,secureStorage]);
- function change(key,value){setForm(current=>({...current,[key]:value}));setSaved(false);setError('')}
- async function next(){ if(step===0&&(!form.degree||!form.branch.trim()||!form.year)){setError('Please add your degree, branch and current year to continue.');return;} if(step<steps.length-1)setStep(step+1); else {setSaving(true);try{await saveProfile({...form,complete:true});setSaved(true);}catch(issue){setError(issue.message||'Your profile could not be saved.');}finally{setSaving(false);}} }
- function toggleSkill(skill){change('skills',form.skills.includes(skill)?form.skills.filter(s=>s!==skill):[...form.skills,skill]);}
- const current=steps[step];
- return <div className="page profile-page"><div className="breadcrumb"><Link to="/">Home</Link><span> / </span>Student profile <span>·</span> <Link to="/account">Account Center</Link></div><div className="questionnaire-layout"><section className="questionnaire-intro"><div className="eyebrow"><span className="sparkle">✳</span> PERSONALIZE YOUR SPACE</div><h1>Start with<br/><em>what matters.</em></h1><p>Five short steps help Smart Engineer AI connect your goals with the right student support. You can update your answers later.</p><div className="privacy-inline">{secureStorage?(user?'Your profile is saved to your Supabase account.':'Sign in to save your profile securely to Supabase.'):'Demo mode: your profile is saved only in this browser.'}<br/><Link className="profile-cta-inline" to="/account">{user?'Manage account and security':'Open Account Center'} ↗</Link></div></section><section className="questionnaire"><div className="progress-meta"><span>STEP {String(step+1).padStart(2,'0')} <i>/</i> {String(steps.length).padStart(2,'0')}</span><span>{Math.round((step+1)/steps.length*100)}%</span></div><div className="progress-track"><span style={{width:`${(step+1)/steps.length*100}%`}}/></div><div className="question-title"><h2>{saved?'Your profile is ready':current.title}</h2><p>{saved?'Your answers will guide relevant domain suggestions.':current.subtitle}</p></div>{saved?<div className="profile-summary"><div><small>STUDY</small><b>{form.degree} · {form.branch} · {form.year}</b></div><div><small>SKILLS & INTERESTS</small><b>{[...form.skills,form.interests].filter(Boolean).join(', ')||'To be explored'}</b></div><div><small>GOALS & SUPPORT</small><b>{[form.careerGoals,form.challenges,form.helpNeeded].filter(Boolean).join(' · ')||'To be explored'}</b></div><div className="form-submit"><Link to="/" className="button-primary">See my recommendations <span>↗</span></Link><button className="button-quiet" onClick={()=>{setSaved(false);setStep(0)}}>Edit answers</button></div></div>:<>
- {step===0&&<div className="question-fields"><label className="field-label">Degree<select value={form.degree} onChange={e=>change('degree',e.target.value)}><option>B.Tech</option><option>B.E.</option><option>Other undergraduate degree</option></select></label><label className="field-label">Branch<input required value={form.branch} onChange={e=>change('branch',e.target.value)} placeholder="e.g. Computer Science"/></label><label className="field-label">Current year<select value={form.year} onChange={e=>change('year',e.target.value)}><option value="">Choose your year</option>{['1st year','2nd year','3rd year','4th year'].map(y=><option key={y}>{y}</option>)}</select></label></div>}
- {step===1&&<div className="skill-options">{skills.map(skill=><button type="button" className={form.skills.includes(skill)?'selected':''} onClick={()=>toggleSkill(skill)} key={skill}>{skill}<span>{form.skills.includes(skill)?'✓':'+'}</span></button>)}</div>}
- {step===2&&<label className="field-label">Interests<textarea autoFocus rows="4" value={form.interests} onChange={e=>change('interests',e.target.value)} placeholder="For example: robotics, app development, renewable energy…"/></label>}
- {step===3&&<label className="field-label">Career goals<textarea autoFocus rows="4" value={form.careerGoals} onChange={e=>change('careerGoals',e.target.value)} placeholder="For example: explore software roles, get an internship, build a startup…"/></label>}
- {step===4&&<div className="question-fields"><label className="field-label">Biggest challenge<textarea autoFocus rows="3" value={form.challenges} onChange={e=>change('challenges',e.target.value)} placeholder="What feels hard at the moment?"/></label><label className="field-label">What help do you need?<textarea rows="3" value={form.helpNeeded} onChange={e=>change('helpNeeded',e.target.value)} placeholder="What would make a difference?"/></label></div>}
- {(error||profileError)&&<p role="alert" className="form-error">{error||profileError}</p>}<div className="question-actions">{step>0?<button className="button-quiet" onClick={()=>setStep(step-1)}>← Back</button>:<Link to="/" className="button-quiet">Not now</Link>}<div className="action-right">{current.optional&&<button className="button-quiet" onClick={()=>step===steps.length-1?next():(setStep(step+1))}>Skip</button>}<button className="button-primary" disabled={saving||profileLoading} onClick={next}>{saving?'Saving securely…':step===steps.length-1?'Finish profile':'Continue'} <span>→</span></button></div></div>
- </>}</section></div><footer className="site-footer"><span><b>Smart Engineer AI<span className="brand-dot">.</span></b> &nbsp;From Confused Student to Placed Engineer.</span><span>YOUR PROFILE CAN BE EDITED AT ANY TIME. &nbsp;✳</span></footer></div>
+import { getProfileQuestionSequence, isAnswered, profileQuestionProgress, profileQuestions } from '../data/profileQuestions';
+import { buildStarterRoadmap, taskPlanSignature } from '../data/progress';
+
+const emptyProfile = { degree: '', branch: '', year: '', skills: [], interests: '', careerGoals: '' };
+const goalLabels = { exploring: 'Exploring options', placements: 'Preparing for placements', internships: 'Finding an internship', 'higher-studies': 'Higher studies or scholarships', 'competitive-exams': 'Competitive exams', projects: 'Building a project' };
+
+export default function Profile({ profile, saveProfile, profileLoading = false, profileError = null, user = null, secureStorage = false }) {
+  const [form, setForm] = useState({ ...emptyProfile, ...profile });
+  const [editing, setEditing] = useState(false);
+  const [activeKey, setActiveKey] = useState(() => getProfileQuestionSequence(profile || {})[0]?.key || null);
+  const hydrated = useRef(false);
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
+  const sequence = useMemo(() => getProfileQuestionSequence(form, { editing }), [form, editing]);
+  const progress = profileQuestionProgress(form, sequence);
+  const question = profileQuestions.find(item => item.key === activeKey) || sequence[0];
+  const complete = Boolean(profile?.complete) && !editing;
+
+  useEffect(() => {
+    if (profileLoading || hydrated.current) return;
+    hydrated.current = true;
+    const nextForm = profile ? { ...emptyProfile, ...profile } : { ...emptyProfile };
+    setForm(nextForm);
+    setActiveKey(getProfileQuestionSequence(nextForm)[0]?.key || null);
+  }, [profile, profileLoading]);
+
+  function change(key, value) {
+    setForm(current => ({ ...current, [key]: value }));
+    setError('');
+  }
+
+  async function saveStep(nextForm) {
+    if (secureStorage && !user) throw new Error('Sign in to save your profile securely.');
+    await saveProfile({ ...nextForm, complete: false });
+  }
+
+  async function finishProfile(nextForm) {
+    const tasks = buildStarterRoadmap(nextForm, nextForm.progressTasks || []);
+    const planUpdates = tasks.length ? { progressTasks: tasks, progressPlanSignature: taskPlanSignature(nextForm) } : {};
+    await saveProfile({ ...nextForm, ...planUpdates, complete: true, onboardingCompletedAt: new Date().toISOString() });
+    setEditing(false);
+  }
+
+  async function continueQuestion() {
+    if (!question) return;
+    if (question.required && !isAnswered(question, form)) {
+      setError(question.key === 'branch' ? 'Add your branch to continue.' : 'Please answer this question to continue.');
+      return;
+    }
+    setSaving(true); setError('');
+    try {
+      await saveStep(form);
+      const eligible = getProfileQuestionSequence(form, { editing });
+      const position = eligible.findIndex(item => item.key === question.key);
+      const next = editing ? eligible[position + 1] : eligible.find(item => item.key !== question.key && !isAnswered(item, form));
+      if (next) setActiveKey(next.key);
+      else {
+        await finishProfile(form);
+      }
+    } catch (issue) {
+      setError(issue.message || 'Your profile could not be saved. Please try again.');
+    } finally { setSaving(false); }
+  }
+
+  async function skipQuestion() {
+    if (!question?.optional) return;
+    const skippedQuestions = [...new Set([...(form.skippedQuestions || []), question.key])];
+    const nextForm = { ...form, skippedQuestions };
+    if (question.key === 'supportConsent') nextForm.supportConsent = false;
+    setForm(nextForm); setSaving(true); setError('');
+    try {
+      await saveStep(nextForm);
+      const eligible = getProfileQuestionSequence(nextForm, { editing });
+      const position = eligible.findIndex(item => item.key === question.key);
+      const next = editing ? eligible[position + 1] : eligible.find(item => item.key !== question.key);
+      if (next) setActiveKey(next.key);
+      else {
+        await finishProfile(nextForm);
+      }
+    } catch (issue) { setError(issue.message || 'Your profile could not be saved. Please try again.'); }
+    finally { setSaving(false); }
+  }
+
+  function beginEditing() {
+    const eligible = getProfileQuestionSequence(form, { editing: true });
+    setEditing(true); setActiveKey(eligible[0]?.key || null); setError('');
+  }
+
+  const answeredCount = Math.min(progress.total, progress.completed);
+  const currentOrdinal = question ? profileQuestions.findIndex(item => item.key === question.key) + 1 : 0;
+  const currentPercent = question ? Math.round((currentOrdinal / profileQuestions.length) * 100) : (progress.requiredComplete ? 100 : 0);
+  const persistedLabel = secureStorage ? (user ? 'Your profile is saved to your Supabase account.' : 'Sign in to save your profile securely to Supabase.') : 'Demo mode: your profile is saved only in this browser.';
+
+  return <div className="page profile-page">
+    <div className="breadcrumb"><Link to="/">Home</Link><span> / </span>Student profile <span>·</span> <Link to="/account">Account Center</Link></div>
+    <div className="questionnaire-layout">
+      <section className="questionnaire-intro">
+        <div className="eyebrow"><span className="sparkle">✳</span> YOUR STUDENT PROFILE</div>
+        <h1>Guidance that<br/><em>fits your goals.</em></h1>
+        <p>A few focused questions help your mentor recommend relevant domains and practical next steps. Skip anything optional and update your answers any time.</p>
+        <div className="privacy-inline">{persistedLabel}<br/><Link className="profile-cta-inline" to="/account">{user ? 'Manage account and security' : 'Open Account Center'} ↗</Link></div>
+      </section>
+      <section className="questionnaire" aria-live="polite">
+        {complete ? <>
+          <div className="progress-meta"><span>PROFILE COMPLETE</span><span>{answeredCount} DETAILS</span></div>
+          <div className="progress-track"><span style={{ width: '100%' }}/></div>
+          <div className="question-title"><h2>Your guidance is ready</h2><p>These details shape your roadmap. You can revisit any answer whenever your goals change.</p></div>
+          <div className="profile-summary">
+            <div><small>STUDY</small><b>{[form.degree, form.branch, form.year && `${form.year}${form.semester ? ` · semester ${form.semester}` : ''}`].filter(Boolean).join(' · ') || 'Add study details'}</b></div>
+            <div><small>SKILLS &amp; EXPERIENCE</small><b>{[...(form.skills || []), form.programmingExperience, form.projectsExperience].filter(Boolean).join(' · ') || 'To be explored'}</b></div>
+            <div><small>INTERESTS &amp; DIRECTION</small><b>{[form.interests, goalLabels[form.goalType], form.careerGoals].filter(Boolean).join(' · ') || 'To be explored'}</b></div>
+            <div><small>LEARNING PLAN</small><b>{[form.availableTime, form.learningPreference].filter(Boolean).join(' · ') || 'Flexible'}</b></div>
+            {form.supportConsent && form.supportNeeds && <div><small>REQUESTED SUPPORT</small><b>{form.supportNeeds}</b></div>}
+            <div className="form-submit"><Link to="/progress" className="button-primary">See my action plan <span>↗</span></Link><button className="button-quiet" onClick={beginEditing}>Edit profile</button></div>
+          </div>
+        </> : question ? <>
+          <div className="progress-meta"><span>{editing ? 'EDIT PROFILE' : 'YOUR PROFILE'} <i>·</i> STEP {String(currentOrdinal).padStart(2, '0')} <i>/</i> {String(profileQuestions.length).padStart(2, '0')}</span><span>{currentPercent}%</span></div>
+          <div className="progress-track"><span style={{ width: `${currentPercent}%` }}/></div>
+          <div className="question-title"><h2>{question.title}</h2><p>{question.subtitle}</p></div>
+          {question.type === 'select' && <label className="field-label">{question.key === 'degree' ? 'Degree' : question.key === 'year' ? 'Current year' : question.key === 'semester' ? 'Semester' : question.key === 'goalType' ? 'Main goal' : question.key === 'availableTime' ? 'Weekly time' : question.key === 'learningPreference' ? 'Learning preference' : 'Experience'}
+            <select autoFocus value={form[question.key] || ''} onChange={event => { const index = question.options.indexOf(event.target.value); change(question.key, question.values?.[index] || event.target.value); }}>
+              <option value="">Choose an option</option>{question.options.map((option, index) => <option key={option} value={question.values?.[index] || option}>{option}</option>)}
+            </select>
+          </label>}
+          {question.type === 'text' && <label className="field-label">Branch<input autoFocus value={form[question.key] || ''} onChange={event => change(question.key, event.target.value)} placeholder={question.placeholder}/></label>}
+          {question.type === 'textarea' && <label className="field-label">Your answer<textarea autoFocus rows="4" value={form[question.key] || ''} onChange={event => change(question.key, event.target.value)} placeholder={question.placeholder}/></label>}
+          {question.type === 'multi' && <div className="skill-options">{question.options.map(skill => <button type="button" className={(form.skills || []).includes(skill) ? 'selected' : ''} onClick={() => change('skills', (form.skills || []).includes(skill) ? form.skills.filter(item => item !== skill) : [...(form.skills || []), skill])} key={skill}>{skill}<span>{(form.skills || []).includes(skill) ? '✓' : '+'}</span></button>)}</div>}
+          {question.type === 'consent' && <div className="support-consent"><p>Your answer is optional and will be stored with your profile so the mentor can adapt its suggestions.</p><button className={form.supportConsent === true ? 'selected' : ''} onClick={() => { change('supportConsent', true); change('supportNeeds', ''); }}>Yes, I would like to share</button><button className={form.supportConsent === false ? 'selected' : ''} onClick={() => { change('supportConsent', false); change('supportNeeds', ''); }}>No, skip this</button></div>}
+          {(error || profileError) && <p role="alert" className="form-error">{error || profileError}</p>}
+          {profileLoading && <p className="profile-save-note" role="status">Loading your saved profile…</p>}
+          <div className="question-actions">
+            {currentOrdinal > 1 ? <button className="button-quiet" onClick={() => setActiveKey(profileQuestions.filter(item => !item.sensitive || form.supportConsent === true)[currentOrdinal - 2]?.key)}>← Back</button> : <Link to="/" className="button-quiet">Not now</Link>}
+            <div className="action-right">{question.optional && <button className="button-quiet" disabled={saving} onClick={skipQuestion}>Skip</button>}<button className="button-primary" disabled={saving || profileLoading || (secureStorage && !user)} onClick={continueQuestion}>{saving ? 'Saving…' : 'Continue'} <span>→</span></button></div>
+          </div>
+          {secureStorage && !user && <p className="profile-save-note">{persistedLabel} <Link to="/account">Sign in</Link></p>}
+        </> : <>
+          <div className="progress-meta"><span>PROFILE READY</span><span>100%</span></div><div className="progress-track"><span style={{ width: '100%' }}/></div>
+          <div className="question-title"><h2>All set</h2><p>Your profile has the required study details. You can edit or add more context at any time.</p></div>
+          <div className="form-submit"><button className="button-primary" disabled={saving || (secureStorage && !user)} onClick={async () => { setSaving(true); setError(''); try { await finishProfile(form); } catch (issue) { setError(issue.message || 'Your profile could not be saved.'); } finally { setSaving(false); } }}>{saving ? 'Saving…' : 'Finish profile'} ↗</button><button className="button-quiet" onClick={beginEditing}>Edit profile</button></div>
+          {(error || profileError) && <p role="alert" className="form-error">{error || profileError}</p>}
+        </>}
+      </section>
+    </div>
+    <footer className="site-footer"><span><b>Smart Engineer AI<span className="brand-dot">.</span></b> &nbsp;From Confused Student to Placed Engineer.</span><span>YOUR PROFILE CAN BE EDITED AT ANY TIME. &nbsp;✳</span></footer>
+  </div>;
 }
 
