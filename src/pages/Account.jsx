@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { supabase, supabaseConfigured } from '../lib/supabase';
 import { Icon } from '../components/Icon';
 
-const MIN_PASSWORD_LENGTH = 12;
+const MIN_PASSWORD_LENGTH = 8;
 
 export default function Account({ user, authLoading }) {
   const [mode, setMode] = useState(() => window.location.hash.includes('type=recovery') ? 'recovery' : user ? 'signed-in' : 'signin');
@@ -43,7 +43,7 @@ export default function Account({ user, authLoading }) {
         if (!email.trim()) throw new Error('Enter your email address.');
         await sendCode();
       } else if (mode === 'verify') {
-        if (!/^\d{8}$/.test(otp.trim())) throw new Error('Enter the 8-digit code from your email.');
+        if (!/^\d{6}$/.test(otp.trim())) throw new Error('Enter the 6-digit code from your email.');
         const { error: verifyError } = await supabase.auth.verifyOtp({ email: email.trim(), token: otp.trim(), type: 'email' });
         if (verifyError) throw verifyError;
         setMessage('Email verified. You are signed in.');
@@ -108,12 +108,12 @@ export default function Account({ user, authLoading }) {
           {message && <p className="account-success" role="status">{message}</p>}
           <div className="account-actions"><button className="button-quiet" disabled={busy} onClick={signOut}>{busy ? 'Signing out…' : 'Sign out'}</button><Link className="text-link" to="/profile">View student profile <Icon name="arrow" size={13}/></Link></div>
         </> : <>
-          <p>{mode === 'signin' ? 'We’ll email you a one-time code each time you sign in.' : mode === 'verify' ? `Enter the 8-digit code sent to ${email}.` : mode === 'signup' ? 'Create an account to save your progress. You’ll confirm your email before signing in.' : mode === 'reset' ? 'We’ll send a secure password reset link if this email has an account.' : 'Set a new password for your account.'}</p>
+          <p>{mode === 'signin' ? 'We’ll email you a one-time code each time you sign in.' : mode === 'verify' ? `Enter the 6-digit code sent to ${email}.` : mode === 'signup' ? 'Create an account to save your progress. You’ll confirm your email before signing in.' : mode === 'reset' ? 'We’ll send a secure password reset link if this email has an account.' : 'Set a new password for your account.'}</p>
           {error && <p className="account-success" role="alert" style={{ color: '#b44444', background: '#fff1f0' }}>{error}</p>}
           {message && <p className="account-success" role="status">{message}</p>}
           <form className="account-form" onSubmit={handleSubmit}>
             {mode !== 'verify' && <label className="field-label">Email address<input type="email" autoComplete="email" value={email} onChange={event => setEmail(event.target.value)} placeholder="you@example.com" required disabled={busy || mode === 'recovery'}/></label>}
-            {mode === 'verify' && <label className="field-label">8-digit email code<input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{8}" maxLength={8} value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, '').slice(0, 8))} placeholder="00000000" required disabled={busy} autoFocus/></label>}
+            {mode === 'verify' && <label className="field-label">6-digit email code<input type="text" inputMode="numeric" autoComplete="one-time-code" pattern="[0-9]{6}" maxLength={6} value={otp} onChange={event => setOtp(event.target.value.replace(/\D/g, '').slice(0, 6))} placeholder="000000" required disabled={busy} autoFocus/></label>}
             {needsPassword && <label className="field-label">New password<input type="password" autoComplete={mode === 'signup' ? 'new-password' : 'new-password'} minLength={MIN_PASSWORD_LENGTH} value={password} onChange={event => setPassword(event.target.value)} placeholder={`At least ${MIN_PASSWORD_LENGTH} characters`} required disabled={busy}/></label>}
             <button className="button-primary account-submit" type="submit" disabled={busy || authLoading || !supabaseConfigured}>{busy ? 'Please wait…' : mode === 'signin' ? 'Email me a sign-in code' : mode === 'verify' ? 'Verify code and sign in' : mode === 'signup' ? 'Create account' : mode === 'reset' ? 'Send reset link' : 'Update password'} <Icon name="arrow" size={14}/></button>
           </form>
@@ -123,7 +123,7 @@ export default function Account({ user, authLoading }) {
             {(mode === 'signup' || mode === 'reset') && <button onClick={() => changeMode('signin')}>Back to sign in</button>}
             {mode === 'recovery' && <button onClick={() => changeMode('signin')}>Back to account</button>}
           </div>
-          {needsPassword && <p className="account-help">Use at least 12 characters. Sign-in itself uses a one-time email code.</p>}
+          {needsPassword && <p className="account-help">Use at least 8 characters. Sign-in itself uses a one-time email code.</p>}
           {mode === 'verify' && <p className="account-help">Codes are delivered by Supabase Auth. If the email contains a link instead, enable the OTP email template in Supabase.</p>}
         </>}
       </div>
