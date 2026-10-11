@@ -9,13 +9,13 @@ The React assistant talks to the Express mentor API through the same-origin `/ap
 ```json
 {
   "text": "How can I learn SQL?",
-  "profile": { "degree": "B.Tech", "branch": "Computer Science", "year": "2nd year", "skills": ["Python"] },
+  "profile": { "degree": "B.Tech", "branch": "Computer Science", "year": "2nd year", "semester": "3", "skills": ["Python"], "goalType": "placements", "availableTime": "2–4 hours" },
   "progressTasks": [{ "id": "year-2-technical-skill", "title": "Choose one technical skill", "status": "in_progress", "priority": "high", "stageYear": 2 }],
   "history": [{ "role": "user", "text": "I want to improve my technical skills" }]
 }
 ```
 
-Only profile and task fields in `server/context/prepareContext.js` are forwarded. History is limited to the last 12 messages for model context (the HTTP schema accepts at most 30); at most 40 validated task summaries are included. The API keeps no conversation or profile database.
+Only profile and task fields in `server/context/prepareContext.js` are forwarded. Study details, skills, experience, goals and learning preferences are allowlisted. Support needs, challenges and requested help are forwarded only when `supportConsent` is true. Email and account identifiers are excluded. History is limited to the last 12 messages for model context (the HTTP schema accepts at most 30); at most 40 validated task summaries are included. The API keeps no conversation or profile database.
 
 ## Response
 
@@ -36,7 +36,7 @@ When follow-up context is necessary, the response includes the question in `repl
 
 ## Add an intent/domain
 
-Add a focused intent to `server/intents/registry.js` with domain IDs already present in `src/data/domains.js`. Add a domain entry and route following [`DOMAIN_INTEGRATION.md`](DOMAIN_INTEGRATION.md). The response carries stable registry IDs; the UI resolves those IDs to domain names/routes and labels unfinished entries as previews.
+Add supported intent IDs to the domain entry in `src/data/domains.js` and add a focused intent definition to `server/intents/registry.js` only when introducing a new intent. Intent-to-domain recommendations are resolved dynamically from the centralized registry, and only enabled IDs are returned. The UI resolves IDs to routes and labels unfinished entries as previews.
 
 Keep model calls in `server/services/geminiClient.js`, context filtering in `server/context/prepareContext.js`, follow-up rules in `server/intents/followUps.js`, and retrieved references in `server/knowledge/domainKnowledge.js`. Never move provider keys into frontend variables or store chat history without an explicit privacy design.
 
