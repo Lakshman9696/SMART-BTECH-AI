@@ -1,4 +1,21 @@
 /** Central registry. Domain names/order come from the supplied document list; descriptions and capabilities are starter metadata. */
+const supportedIntents = {
+  'ai-tools-dictionary':['ai-tools','learning-resources'],
+  'skill-job-analysis':['career-guidance','skill-roadmap'],
+  'banking-exams-roles':['exam-guidance','banking-preparation'],
+  'government-competitive-exams':['exam-guidance','government-exam-preparation'],
+  'company-conducted-exams':['company-preparation','placement-preparation'],
+  'abroad-scholarships':['higher-study-guidance','scholarship-search'],
+  'job-skills-interview-soft-skills':['interview-preparation','resume-building','communication-skills'],
+  'academic-learning':['academic-learning','learning-resources','general-student-question'],
+  'ambassador-programs':['campus-opportunities'],
+  'internships':['internship-placement'],
+  'event-handling':['event-planning'],
+  coding:['programming-help','technical-skill-practice'],
+  projects:['project-recommendations','project-planning'],
+  career:['career-guidance','career-roadmap'],
+};
+
 export const domains = [
   { id:'ai-tools-dictionary', sourceNumber:1, sourceFile:'01-ai-tools-dictionary.docx', name:'AI Tools Dictionary', category:'AI & Digital', description:'Explore AI tools and understand what each one can help you do.', capabilities:['AI tools','artificial intelligence','tool selection','productivity'], route:'/domains/ai-tools-dictionary', status:'planned', enabled:true, icon:'✳', color:'lavender' },
   { id:'skill-job-analysis', sourceNumber:2, sourceFile:'02-skill-and-job-analysis.docx', name:'Skill & Job Analysis', category:'Career', description:'Compare your current skills with roles and identify useful next skills to build.', capabilities:['skills','job analysis','career roles','skill gaps'], route:'/domains/skill-job-analysis', status:'planned', enabled:true, icon:'⌕', color:'mint' },
@@ -14,15 +31,21 @@ export const domains = [
   { id:'coding', sourceNumber:14, sourceFile:'14-programming.docx', name:'Programming', category:'Technical skills', description:'Build programming knowledge through concepts, practice and debugging.', capabilities:['programming','coding','debugging','software development','technical skills'], route:'/domains/coding', status:'planned', enabled:true, icon:'{ }', color:'mint' },
   { id:'projects', sourceNumber:15, sourceFile:'15-projects-and-idea-analysis.docx', name:'Projects & Idea Analysis', category:'Build', description:'Evaluate project ideas and shape them into clear, practical next steps.', capabilities:['projects','idea analysis','project ideas','research','building'], route:'/domains/projects', status:'planned', enabled:true, icon:'⌘', color:'sky' },
   { id:'career', sourceNumber:16, sourceFile:'16-career-roadmap.docx', name:'Career Roadmap', category:'Career', description:'Map interests and goals to skills, roles and career milestones.', capabilities:['career roadmap','career planning','career goals','roles','skills'], route:'/domains/career', status:'planned', enabled:true, icon:'↗', color:'lavender' },
-].map(domain => ({ ...domain, prompt: `Help me explore ${domain.name.toLowerCase()}.` }));
+].map(domain => ({
+  ...domain,
+  supportedIntents: supportedIntents[domain.id] || [],
+  integration: { kind: domain.status === 'ready' ? 'module' : 'preview', component: null, contractVersion: 1 },
+  prompt: `Help me explore ${domain.name.toLowerCase()}.`,
+}));
 
 export const getDomain = id => domains.find(domain => domain.id === id);
 export const enabledDomains = () => domains.filter(domain => domain.enabled);
+export const domainSupportsIntent = (domainId, intentId) => Boolean(getDomain(domainId)?.enabled && getDomain(domainId)?.supportedIntents.includes(intentId));
 
 // Local demo matcher. Replace its implementation behind the same interface with an API call later.
 const intentRules = [
   { ids:['internships','career','skill-job-analysis','job-skills-interview-soft-skills'], terms:['internship','job','career','resume','cv','placement','interview','skill gap','skills'] },
-  { ids:['programming','projects','ai-tools-dictionary'], terms:['code','coding','programming','debug','project','build','idea','ai tool'] },
+  { ids:['coding','projects','ai-tools-dictionary'], terms:['code','coding','programming','debug','project','build','idea','ai tool'] },
   { ids:['banking-exams-roles','government-competitive-exams','company-conducted-exams','academic-learning'], terms:['exam','test','revision','study','course','class','banking','government','company test','aptitude'] },
   { ids:['abroad-scholarships','ambassador-programs','event-handling'], terms:['abroad','scholarship','international','ambassador','event','organize'] },
   { ids:['academic-learning','skill-job-analysis'], terms:['plan','deadline','schedule','organized','week','time'] },
@@ -41,7 +64,7 @@ export function recommendDomains(text = '', profile = {}) {
   const ordered = [...scores.entries()].sort((a,b)=>b[1]-a[1]).map(([id])=>getDomain(id)).filter(Boolean);
   const unique = ordered.filter((domain,index)=>ordered.findIndex(d=>d.id===domain.id)===index).slice(0,3);
   if (unique.length) return unique;
-  return ['academic-learning','career','programming'].map(getDomain).filter(domain=>domain?.enabled).slice(0,2);
+  return ['academic-learning','career','coding'].map(getDomain).filter(domain=>domain?.enabled).slice(0,2);
 }
 export function reasonFor(domain, profile = {}, message = '') {
   const text = [message, profile.skills, profile.interests, profile.careerGoals, profile.challenges, profile.helpNeeded].flat().filter(Boolean).join(' ').toLowerCase();
