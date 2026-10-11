@@ -18,9 +18,11 @@ Maintain domain metadata in `src/data/domains.js`:
   name: 'AI Tools Dictionary',
   description: 'Short student-facing summary.',
   capabilities: ['AI tools', 'tool selection', 'productivity'],
+  supportedIntents: ['ai-tools', 'learning-resources'],
   route: '/domains/ai-tools-dictionary',
   enabled: true,
   status: 'planned', // change to "ready" only after core task is connected
+  integration: { kind: 'preview', component: null, contractVersion: 1 },
 }
 ```
 
@@ -35,14 +37,14 @@ Use a unique stable ID. Keep each route unique. The `enabled` flag controls cata
 5. Keep domain-specific calls inside the module/service. Show loading, empty and error states for service data.
 6. Set `status: 'ready'` only after the domain's core task works. Until registered, every supplied entry displays the shared placeholder and is identified as planned.
 
-The chatbot reads domain capabilities and IDs from the registry. Add a domain's natural-language capabilities to its metadata so the demo matcher can discover it. No domain-specific UI belongs in chatbot code.
+The chatbot and Express mentor share the IDs and intent metadata from `src/data/domains.js`. Add supported intent IDs to the domain entry to let the server recommend the domain for those existing intents. No domain-specific UI or provider logic belongs in chatbot code. Verify recommendations still label `planned` entries as previews.
 
 ## Assistant service boundary
 
 `recommendDomains(text, profile)` is the current deterministic local demo matcher in `src/data/domains.js`. Replace it with a service that calls a trusted server endpoint when available, returning `{ reply, recommendedDomainIds, followUpQuestion? }`. Render recommendations by looking up IDs in the registry. Never expose AI provider credentials in client code or `VITE_*` variables.
 
-## Future profile API adapter
+## Student profile persistence
 
-The questionnaire uses `src/services/profileRepository.js` and currently saves in browser local storage. Preserve its `load` and `save` behavior when switching to the authenticated user's API-backed profile. The current project specification recommends a Node/Express API and MongoDB Atlas. Keep database credentials on the server; do not put secrets in `VITE_*` variables.
+The questionnaire and action plan use `src/services/profileRepository.js`. When Supabase is configured, they save profile and task JSON to the signed-in student's owner-scoped `student_profiles` row. Otherwise, local demo data stays in this browser. Keep the repository's `load` and `save` interface when adding fields, preserve RLS, and do not create a second profile database. Gemini credentials stay in the server environment.
 
 
