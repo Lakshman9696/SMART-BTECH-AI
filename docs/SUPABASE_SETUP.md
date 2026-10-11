@@ -9,7 +9,7 @@ The app can use Supabase Auth and Postgres for student profiles. Until the requi
 3. In the Supabase SQL Editor, run [`../supabase/schema.sql`](../supabase/schema.sql). This creates the profile table and owner-only RLS policies.
 4. In Supabase Auth settings, configure the site URL and allowed redirect URLs for local development and your deployed app. Keep email confirmation enabled.
 5. In **Authentication → Providers → Email**, set the minimum password length to **12**. Account creation and password recovery enforce the same minimum in the interface.
-6. In **Authentication → Email Templates**, configure the sign-in email to include the OTP token (`{{ .Token }}`). Supabase's default magic-link template may send a link instead of a numeric code; the UI's verify step expects the 6-digit code. Save the template and test delivery before inviting students.
+6. In **Authentication → Email Templates**, configure the sign-in email to include the OTP token (`{{ .Token }}`). Supabase's default magic-link template may send a link instead of a numeric code; this project is configured to accept Supabase's 8-digit email code. Save the template and test delivery before inviting students.
 7. Set the local and production site/redirect URLs, then restart Vite. Open Account Center to create an account or sign in.
 
 The browser client uses only the publishable key. Never add a service-role or secret key to a `VITE_*` variable or frontend file. The table grants access only to signed-in users and every policy checks that `auth.uid()` matches the row owner. Anonymous access is revoked.
