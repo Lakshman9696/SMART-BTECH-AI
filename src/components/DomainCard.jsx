@@ -1,0 +1,3 @@
+import { Link } from 'react-router-dom';
+export function DomainCard({domain,index=0}) { return <Link className="domain-card" to={domain.route} style={{'--delay':`${index*20}ms`}}><div className={`domain-icon ${domain.color}`}>{domain.icon}</div><div className="card-category">{domain.category}</div><h3>{domain.name}</h3><p>{domain.description}</p><div className="card-footer"><span className="planned-dot"></span>{domain.status==='ready'?'Available':'Preview only'}<span className="arrow">↗</span></div></Link> }
+export function SectionHeading({eyebrow,title,link,to='/domains'}) { return <div className="section-heading"><div><div className="section-kicker">{eyebrow}</div><h2>{title}</h2></div>{link&&<Link to={to} className="text-link">{link} <span>↗</span></Link>}</div> }
