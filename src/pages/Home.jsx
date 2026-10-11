@@ -1,4 +1,4 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { Assistant } from '../components/Assistant';
 import { Icon } from '../components/Icon';
 import { DomainCard } from '../components/DomainCard';
@@ -54,6 +54,8 @@ function MilestonesPanel() {
 }
 
 export default function Home({ profile }) {
+  const location = useLocation();
+  const mentorPrompt = new URLSearchParams(location.search).get('mentorPrompt') || '';
   const firstName = profile?.name?.trim()?.split(/\s+/)[0];
   const featured = enabledDomains().slice(0, 3);
   return <div className="page dashboard-page">
@@ -65,7 +67,7 @@ export default function Home({ profile }) {
       <Link to="/profile" className="profile-action"><span className="profile-action-avatar">{firstName?.[0]?.toUpperCase() || 'S'}</span><span><b>{firstName || 'Your profile'}</b><small>{profile?.branch || 'Add your study details'}</small></span><Icon name="chevron" size={16}/></Link>
     </section>
 
-    <section className="assistant-section"><div className="assistant-section-heading"><div><span className="section-kicker">YOUR AI COMPANION</span><h2>What are we working on today?</h2><p>Ask about careers, skills, exams or placements.</p></div><span className="assistant-status"><i/> Demo mode</span></div><Assistant profile={profile} className="dashboard-assistant"/></section>
+      <section className="assistant-section"><div className="assistant-section-heading"><div><span className="section-kicker">YOUR AI COMPANION</span><h2>What are we working on today?</h2><p>Ask about careers, skills, exams or placements.</p></div><span className="assistant-status"><i/> Mentor API</span></div><Assistant profile={profile} progressTasks={profile?.progressTasks||[]} initialPrompt={mentorPrompt} className="dashboard-assistant"/></section>
 
     <section className="modules-section">
       <div className="section-heading"><div><span className="section-kicker">YOUR STUDENT TOOLKIT</span><h2>Explore your growth modules</h2></div><Link className="text-link" to="/domains">All {enabledDomains().length} domains <Icon name="arrow" size={14}/></Link></div>

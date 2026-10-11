@@ -14,7 +14,7 @@ The browser client uses only the publishable key. Never add a service-role or se
 
 ## What is stored
 
-The questionnaire profile is stored as JSON in `public.student_profiles`, keyed by the Supabase Auth user ID. Sign-up, sign-in, password reset, and local-device sign-out are provided. The existing browser demo profile is not automatically copied to an account; users can re-enter it after connecting and signing in.
+The questionnaire profile is stored as JSON in `public.student_profiles`, keyed by the Supabase Auth user ID. Roadmap tasks and task status are stored inside the same profile JSON, so the existing owner-only RLS policy protects progress too; no second table is required. Sign-up, sign-in, password reset, and local-device sign-out are provided. The existing browser demo profile is not automatically copied to an account; users can re-enter it after connecting and signing in.
 
 ## Operations to configure
 

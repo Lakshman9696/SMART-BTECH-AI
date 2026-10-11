@@ -1,85 +1,50 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { recommendDomains, reasonFor } from '../data/domains';
+import { getDomain } from '../data/domains';
+import { getMentorStatus, sendMentorMessage } from '../services/mentorApi';
 import { Icon } from './Icon';
 
 const prompts = ['Plan my career path', 'What skills should I learn?', 'Prepare me for interviews'];
-const followUps = ['Coursework', 'Skills & projects', 'Career goals', 'Something else'];
+export function Assistant({ profile, progressTasks = [], initialPrompt = '', className = '' }) {
+  const [input, setInput] = useState(initialPrompt), [messages, setMessages] = useState([]), [busy, setBusy] = useState(false);
+  const [status, setStatus] = useState({ available: false, configured: false });
+  const busyRef = useRef(false), historyRef = useRef([]);
+  useEffect(() => { getMentorStatus().then(setStatus); }, []);
 
-export function Assistant({ profile, initialPrompt = '', className = '' }) {
-  const [input, setInput] = useState(initialPrompt);
-  const [messages, setMessages] = useState([]);
-  const [busy, setBusy] = useState(false);
-
-  function send(text = input) {
-    if (!text.trim() || busy) return;
+  async function send(text = input) {
+    if (!text.trim() || busyRef.current) return;
     const userText = text.trim();
-    setInput('');
-    setMessages((current) => [...current, { role: 'user', text: userText }]);
-    setBusy(true);
-    setTimeout(() => {
-      const terms = userText.toLowerCase().match(/[a-z]{3,}/g) || [];
-      if (terms.length < 2) {
-        setMessages((current) => [...current, {
-          role: 'assistant',
-          text: 'What would you like to make progress on? A little more detail will help me find a useful place to start.',
-          followUp: true,
-        }]);
-        setBusy(false);
-        return;
-      }
-      if (!profile?.complete) {
-        setMessages((current) => [...current, {
-          role: 'assistant',
-          text: 'I can help you find a starting area. To make career and skill suggestions personal, complete your short student profile first.',
-          profileNeeded: true,
-        }]);
-        setBusy(false);
-        return;
-      }
-      const picks = recommendDomains(userText, profile).filter(Boolean);
-      setMessages((current) => [...current, {
-        role: 'assistant',
-        text: 'Here are a few places that may help, based on what you shared:',
-        domains: picks,
-        message: userText,
-      }]);
-      setBusy(false);
-    }, 480);
+    const userMessage = { role: 'user', text: userText };
+    const prior = historyRef.current;
+    const next = [...prior, userMessage];
+    setInput(''); setMessages(current => [...current, userMessage]); setBusy(true); busyRef.current = true;
+    try {
+      const result = await sendMentorMessage({ text: userText, profile: profile || {}, progressTasks, history: prior });
+      const assistantMessage = { role: 'assistant', text: result.reply, intent: result.intent, domains: (result.recommendedDomainIds || []).map(getDomain).filter(Boolean), followUpQuestion: result.followUpQuestion, pendingIntent: result.pendingIntent, awaitingField: result.awaitingField };
+      historyRef.current = [...next, assistantMessage]; setMessages(current => [...current, assistantMessage]);
+      setStatus({ available: true, configured: true });
+    } catch (error) {
+      const assistantMessage = { role: 'assistant', text: error.message, error: true, setup: error.code === 'GEMINI_NOT_CONFIGURED' };
+      historyRef.current = [...next, assistantMessage]; setMessages(current => [...current, assistantMessage]);
+      if (error.code === 'GEMINI_NOT_CONFIGURED') setStatus({ available: true, configured: false });
+    } finally { setBusy(false); busyRef.current = false; }
   }
 
   return <section className={`assistant-card ${className}`} id="assistant" aria-labelledby="assistant-title">
-    <div className="assistant-head">
-      <div className="assistant-emblem" aria-hidden="true">✳</div>
-      <div>
-        <div className="section-kicker">SMART ENGINEER AI <span className="demo-pill">DEMO</span></div>
-        <h2 id="assistant-title">{profile?.complete ? 'What would you like help with?' : 'What’s on your mind?'}</h2>
-        <p>{profile?.complete ? 'Share what you’re working toward. I’ll use your profile to suggest a next step.' : 'Tell me what you need in your own words. Your profile makes suggestions more personal.'}</p>
-      </div>
-    </div>
-    <div className="chat-body" aria-live="polite">
-      {messages.length === 0 ? <div className="suggestions" aria-label="Try asking">
-        {prompts.map((suggestion) => <button key={suggestion} onClick={() => send(suggestion)}>{suggestion}<span aria-hidden="true">↗</span></button>)}
-      </div> : <div className="messages">
-        {messages.map((message, index) => <div className={`message ${message.role}`} key={`${message.role}-${index}`}>
-          <span className="message-icon" aria-hidden="true">{message.role === 'assistant' ? '✳' : 'You'}</span>
-          <div>{message.text}
-            {message.followUp && <div className="follow-up-options">{followUps.map((option) => <button key={option} onClick={() => send(`I need help with ${option.toLowerCase()}`)}>{option}</button>)}</div>}
-            {message.profileNeeded && <Link className="profile-cta-inline" to="/profile">Complete your student profile <span aria-hidden="true">↗</span></Link>}
-            {message.domains?.map((domain) => <Link to={domain.route} className="message-domain" key={domain.id}>
-              <span className={`domain-icon ${domain.color}`}>{domain.icon}</span>
-              <span><b>{domain.name}</b><small>{reasonFor(domain, profile?.complete ? profile : {}, message.message)}</small><small className="domain-status">{domain.status === 'ready' ? 'Available' : 'Planned · preview only'}</small></span>
-              <span className="arrow" aria-hidden="true">↗</span>
-            </Link>)}
-          </div>
-        </div>)}
-        {busy && <div className="typing" role="status"><span className="typing-mark" aria-hidden="true">✳</span><span>Finding a helpful starting point</span></div>}
-      </div>}
-    </div>
-    <form className="chat-input" onSubmit={(event) => { event.preventDefault(); send(); }}>
-      <input value={input} onChange={(event) => setInput(event.target.value)} placeholder="Tell me what you’re working through…" aria-label="Describe what you need help with" />
-      <button disabled={!input.trim() || busy} aria-label="Send message">↑</button>
-    </form>
-    <div className="privacy-note"><Icon name="spark" size={13}/> &nbsp;Local demo recommendations only · AI backend not connected</div>
+    <div className="assistant-head"><div className="assistant-emblem" aria-hidden="true">✳</div><div>
+      <div className="section-kicker">SMART ENGINEER AI <span className={`demo-pill ${status.configured ? 'connected' : ''}`}>{status.configured ? 'GEMINI API' : 'SETUP NEEDED'}</span></div>
+      <h2 id="assistant-title">{profile?.complete ? 'What would you like help with?' : 'What’s on your mind?'}</h2>
+      <p>{profile?.complete ? 'Share what you’re working toward. I’ll use your profile to guide a practical next step.' : 'Tell me what you need in your own words. Your profile can make guidance more personal.'}</p>
+    </div></div>
+    {!status.configured && <div className="mentor-setup-note" role="status">{status.available ? 'Gemini backend is running, but no server API key is configured yet.' : 'Mentor backend is not reachable. Start the project with npm.cmd run dev.'} Replies will not be simulated.</div>}
+    <div className="chat-body" aria-live="polite">{messages.length === 0 ? <div className="suggestions" aria-label="Try asking">
+      {prompts.map(suggestion => <button key={suggestion} onClick={() => send(suggestion)}>{suggestion}<span aria-hidden="true">↗</span></button>)}
+    </div> : <div className="messages">{messages.map((message, index) => <div className={`message ${message.role}`} key={`${message.role}-${index}`}>
+      <span className="message-icon" aria-hidden="true">{message.role === 'assistant' ? '✳' : 'You'}</span><div>{message.text}
+        {message.setup && <p className="setup-hint">Add <code>GEMINI_API_KEY</code> to the ignored <code>.env.local</code> file, then restart the API. Never use a <code>VITE_</code> key.</p>}
+        {message.domains?.map(domain => <Link to={domain.route} className="message-domain" key={domain.id}><span className={`domain-icon ${domain.color}`}>{domain.icon}</span><span><b>{domain.name}</b><small>{domain.description}</small><small className="domain-status">{domain.status === 'ready' ? 'Available' : 'Planned · preview only'}</small></span><span className="arrow" aria-hidden="true">↗</span></Link>)}
+      </div></div>)}{busy && <div className="typing" role="status"><span className="typing-mark" aria-hidden="true">✳</span><span>Preparing a response…</span></div>}</div>}</div>
+    <form className="chat-input" onSubmit={event => { event.preventDefault(); send(); }}><input value={input} onChange={event => setInput(event.target.value)} placeholder="Tell me what you’re working through…" aria-label="Describe what you need help with"/><button disabled={!input.trim() || busy} aria-label="Send message">↑</button></form>
+    <div className="privacy-note"><Icon name="spark" size={13}/> &nbsp;Chat stays in this tab and is sent to the configured mentor API only when you send a message.</div>
   </section>;
 }
