@@ -37,4 +37,3 @@ export function profileQuestionProgress(profile = {}, sequence = getProfileQuest
   const skipped = new Set(profile.skippedQuestions || []);
   return { completed: answeredRequired + answeredOptional + skipped.size, total: profileQuestions.length, requiredComplete: answeredRequired === required.length, remaining: sequence.length };
 }
-

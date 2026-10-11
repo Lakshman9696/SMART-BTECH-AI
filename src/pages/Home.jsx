@@ -87,4 +87,3 @@ export default function Home({ profile, saveProfile, profileLoading, user, secur
     <footer className="site-footer"><span><b>Smart Engineer AI</b> &nbsp;Guidance for your next step.</span><span>DEMO GUIDANCE · CHECK OFFICIAL SOURCES FOR CURRENT FACTS</span></footer>
   </div>;
 }
-

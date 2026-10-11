@@ -27,4 +27,3 @@ The questionnaire profile is stored as JSON in `public.student_profiles`, keyed 
 - AI provider secrets still belong in a server/Edge Function, never this browser app.
 
 Supabase's official [React Auth quickstart](https://supabase.com/docs/guides/auth/quickstarts/react) and [Row Level Security guide](https://supabase.com/docs/guides/database/postgres/row-level-security) explain the platform setup.
-

@@ -11,7 +11,7 @@ const supportedIntents = {
   'ambassador-programs':['campus-opportunities'],
   'internships':['internship-placement'],
   'event-handling':['event-planning'],
-  coding:['programming-help','technical-skill-practice'],
+  coding:['programming-help','technical-skill-practice','skill-roadmap'],
   projects:['project-recommendations','project-planning'],
   career:['career-guidance','career-roadmap'],
 };
@@ -68,7 +68,24 @@ export function recommendDomains(text = '', profile = {}) {
 }
 export function reasonFor(domain, profile = {}, message = '') {
   const text = [message, profile.skills, profile.interests, profile.careerGoals, profile.challenges, profile.helpNeeded].flat().filter(Boolean).join(' ').toLowerCase();
+  const reasons = {
+    'ai-tools-dictionary': [/\b(ai|gemini|chatgpt|artificial intelligence)\b/, 'You asked about AI tools, so this section can help compare useful options.'],
+    'skill-job-analysis': [/\b(skill|skills|job|role|software career)\b/, 'This connects the skills you are building with roles you may want to pursue.'],
+    'banking-exams-roles': [/\b(bank|banking)\b/, 'This is the registered section for banking roles and exam preparation.'],
+    'government-competitive-exams': [/\b(government|upsc|competitive exam)\b/, 'This is the registered section for government exam pathways.'],
+    'company-conducted-exams': [/\b(company|placement test|aptitude|assessment)\b/, 'This connects your placement goal with company hiring assessments.'],
+    'abroad-scholarships': [/\b(abroad|scholarship|master|m\.tech)\b/, 'This section matches your interest in further study or funding.'],
+    'job-skills-interview-soft-skills': [/\b(interview|resume|cv|communication|soft skill)\b/, 'This section covers the interview or communication practice you asked for.'],
+    'academic-learning': [/\b(study|subject|course|revision|academic|class)\b/, 'This can help you make progress with the subject or study task you mentioned.'],
+    'ambassador-programs': [/\b(ambassador|campus opportunity|leadership)\b/, 'This matches your interest in student ambassador opportunities.'],
+    internships: [/\b(internship)\b/, 'This section matches your interest in finding and preparing for internships.'],
+    'event-handling': [/\b(event|organize|organise)\b/, 'This section is for planning and coordinating student events.'],
+    coding: [/\b(sql|python|java|javascript|programming|coding|debug)\b/, 'You asked about a technical skill, so this is the closest registered practice area.'],
+    projects: [/\b(project|idea|research|build)\b/, 'This section helps turn your project or research idea into a practical first step.'],
+    career: [/\b(career|confused|career path|goal|role)\b/, 'This section can help you compare directions and plan a career path.'],
+  };
+  const match = reasons[domain.id];
+  if (match && match[0].test(text)) return match[1];
   const matched = domain.capabilities.find(cap=>text.includes(cap.toLowerCase()));
   return matched ? `Connects with what you shared about ${matched}.` : `A useful starting point for ${domain.category.toLowerCase()}.`;
 }
-

@@ -1,4 +1,5 @@
 import { handleMentorChat } from '../../server/routes/mentorHandler.js';
+import { safeErrorDiagnostic, safeErrorMessage } from '../../server/utils/safeErrorDiagnostic.js';
 
 const windowMs = 60_000;
 const requestLimit = 15;
@@ -48,11 +49,8 @@ export default async function chat(req, res) {
     const result = await handleMentorChat(req.body || {});
     return res.status(result.status).json(result.body);
   } catch (error) {
-    const status = Number.isInteger(error.status) && error.status >= 400 && error.status < 600 ? error.status : 500;
-    console.error('Mentor API error:', error.code || error.message);
-    const message = status === 503 ? error.message : status === 429
-      ? 'Too many requests. Please wait a moment and try again.'
-      : 'The mentor could not respond right now. Please try again shortly.';
-    return res.status(status).json({ error: message, ...(error.code ? { code: error.code } : {}) });
+    const { status, code } = safeErrorDiagnostic(error);
+    if (status === 401 || status === 403 || status >= 500) console.error('Mentor API failure', JSON.stringify({ status, code }));
+    return res.status(status).json({ error: safeErrorMessage(error, { status, code }), code });
   }
 }

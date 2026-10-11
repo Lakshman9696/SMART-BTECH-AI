@@ -51,4 +51,3 @@ export default function ActionPlanBar({ profile, saveProfile, profileLoading = f
     <div className="action-plan-footnote">Progress updates when you change a task status. Domains marked “planned preview” are not connected features yet.</div>
   </section>;
 }
-

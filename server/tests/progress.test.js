@@ -80,4 +80,3 @@ test('mentor context is bounded, owner-safe and sends support details only after
   assert.equal(progressTasks[0].userId, undefined);
   assert.equal(prepareContext({ supportConsent: true, supportNeeds: 'practice presenting' }).profile.supportNeeds, 'practice presenting');
 });
-

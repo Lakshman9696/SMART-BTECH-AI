@@ -146,4 +146,3 @@ export default function Profile({ profile, saveProfile, profileLoading = false, 
     <footer className="site-footer"><span><b>Smart Engineer AI<span className="brand-dot">.</span></b> &nbsp;From Confused Student to Placed Engineer.</span><span>YOUR PROFILE CAN BE EDITED AT ANY TIME. &nbsp;✳</span></footer>
   </div>;
 }
-

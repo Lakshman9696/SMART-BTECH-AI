@@ -73,4 +73,3 @@ export default function ProgressDashboard({ profile, saveProfile, profileLoading
     </section>}
   </>;
 }
-

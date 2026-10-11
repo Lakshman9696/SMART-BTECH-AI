@@ -46,3 +46,53 @@ test('mentor receives student roadmap statuses for personalized answers', async 
   await mentorService({ text: 'Why is this my next step?', profile: { year: '2nd year' }, progressTasks: [{ id: 'x', title: 'Practise Python', status: 'in_progress', stageYear: 2 }] }, async input => { received = input; return 'Continue your Python practice.'; });
   assert.equal(received.progressTasks[0].status, 'in_progress');
 });
+
+test('resume creation asks one missing detail at a time', async () => {
+  const first = await mentorService({ text: 'I need to create a resume' }, generated);
+  assert.equal(first.awaitingField, 'resumeRole');
+  const second = await mentorService({
+    text: 'Software developer internship',
+    history: [{ role: 'user', text: 'I need to create a resume' }, { role: 'assistant', text: first.reply, pendingIntent: first.pendingIntent, awaitingField: first.awaitingField }],
+  }, generated);
+  assert.equal(second.awaitingField, 'degree');
+});
+
+test('a new topic interrupts a pending resume follow-up', async () => {
+  let called = false;
+  const result = await mentorService({
+    text: 'Give me a roadmap to learn Python',
+    history: [
+      { role: 'user', text: 'I need to create a resume' },
+      { role: 'assistant', text: 'What role should this target?', pendingIntent: 'resume-building', awaitingField: 'resumeRole' },
+    ],
+  }, async input => { called = true; return `Python roadmap for ${input.text}: learn syntax, practise, then build a project.`; });
+  assert.equal(called, true);
+  assert.equal(result.awaitingField, '');
+  assert.match(result.reply, /Python roadmap/);
+});
+
+test('an explicit resume template request returns a copyable Markdown answer', async () => {
+  let called = false;
+  const result = await mentorService({ text: 'Give me a resume template' }, async () => { called = true; return '## [Full Name]\n\n### Education\n- [Degree]'; });
+  assert.equal(called, true);
+  assert.match(result.reply, /## \[Full Name\]/);
+  assert.deepEqual(result.recommendedDomainIds, ['job-skills-interview-soft-skills']);
+});
+
+test('completed roadmap work recommends an incomplete task from that roadmap', async () => {
+  const result = await mentorService({
+    text: 'I completed SQL practice',
+    progressTasks: [
+      { id: 'done-sql', title: 'Practise SQL', domainId: 'coding', status: 'completed', stageYear: 2 },
+      { id: 'next-sql', title: 'Try SQL joins', domainId: 'coding', status: 'pending', stageYear: 2, priority: 'high', estimatedMinutes: 20 },
+    ],
+  }, generated);
+  assert.equal(result.actionPlanTask.taskId, 'next-sql');
+  assert.equal(result.actionPlanTask.route, '/domains/coding');
+});
+
+test('greeting has no unrelated domain or action-plan suggestion', async () => {
+  const result = await mentorService({ text: 'Hi', progressTasks: [{ id: 'next', title: 'Practise SQL', domainId: 'coding', status: 'pending', stageYear: 2 }] }, generated);
+  assert.deepEqual(result.recommendedDomainIds, []);
+  assert.equal(result.actionPlanTask, null);
+});

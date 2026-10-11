@@ -3,7 +3,7 @@ import { domains } from '../../src/data/domains.js';
 const definitions = [
   { id: 'career-guidance', terms: ['career', 'software job', 'software engineer', 'career path', 'job role', 'career goal', 'career roadmap'] },
   { id: 'skill-roadmap', terms: ['skills', 'learn', 'roadmap', 'skill gap', 'what should i learn', 'technical skills'] },
-  { id: 'programming-help', terms: ['code', 'coding', 'programming', 'sql', 'python', 'javascript', 'debug', 'explain'] },
+  { id: 'programming-help', terms: ['code', 'coding', 'programming', 'sql', 'python', 'javascript', 'debug', 'dbms', 'database', 'explain'] },
   { id: 'interview-preparation', terms: ['interview', 'behavioral', 'communication', 'soft skills'] },
   { id: 'resume-building', terms: ['resume', 'cv', 'cover letter'] },
   { id: 'internship-placement', terms: ['internship', 'placement', 'recruiter', 'job application'] },
@@ -28,4 +28,3 @@ export const intentRegistry = definitions.map(intent => Object.defineProperty({ 
 }));
 
 export const enabledDomainIds = new Set(domains.filter(domain => domain.enabled).map(domain => domain.id));
-

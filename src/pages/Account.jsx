@@ -130,4 +130,3 @@ export default function Account({ user, authLoading }) {
     </div>
   </section>;
 }
-

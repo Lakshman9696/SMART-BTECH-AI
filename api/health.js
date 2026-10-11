@@ -3,5 +3,6 @@ export default function health(req, res) {
     res.setHeader('Allow', 'GET');
     return res.status(405).json({ error: 'Method not allowed.' });
   }
+  res.setHeader('Cache-Control', 'no-store, max-age=0');
   return res.status(200).json({ ok: true, geminiConfigured: Boolean(process.env.GEMINI_API_KEY) });
 }

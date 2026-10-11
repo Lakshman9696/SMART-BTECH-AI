@@ -47,4 +47,3 @@ The chatbot and Express mentor share the IDs and intent metadata from `src/data/
 
 The questionnaire and action plan use `src/services/profileRepository.js`. When Supabase is configured, they save profile and task JSON to the signed-in student's owner-scoped `student_profiles` row. Otherwise, local demo data stays in this browser. Keep the repository's `load` and `save` interface when adding fields, preserve RLS, and do not create a second profile database. Gemini credentials stay in the server environment.
 
-

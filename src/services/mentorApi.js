@@ -1,5 +1,10 @@
 export async function getMentorStatus() {
-  try { const response = await fetch('/api/health'); if (!response.ok) return { available: false, configured: false }; return { available: true, ...(await response.json()) }; }
+  try {
+    const response = await fetch('/api/health', { cache: 'no-store' });
+    if (!response.ok) return { available: false, configured: false };
+    const health = await response.json();
+    return { available: true, configured: health.geminiConfigured === true };
+  }
   catch { return { available: false, configured: false }; }
 }
 export async function sendMentorMessage(payload) {

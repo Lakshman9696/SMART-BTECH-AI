@@ -51,4 +51,3 @@ The current Express API binds to `127.0.0.1` and is intended for local developme
 ## Source documentation
 
 The Smart BTech AI specification PDF referenced in the request was not present in the workspace. This implementation follows the pasted requirements and the existing project structure. The descriptions and capabilities for the supplied domain names are starter metadata until their detailed source documents are connected.
-

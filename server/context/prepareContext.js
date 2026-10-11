@@ -18,4 +18,3 @@ export function prepareContext(profile = {}, history = [], progressTasks = []) {
   })).filter(task => !task.domainId || enabledDomainIds.has(task.domainId));
   return { profile: safeProfile, history: safeHistory, progressTasks: safeProgress };
 }
-

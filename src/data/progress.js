@@ -140,4 +140,3 @@ export function stageStatus(stage, tasks = [], profile = {}) {
   if (stageTasks.some(item => item.status === 'in_progress')) return 'in_progress';
   return year === stage.year ? 'current' : year && stage.year < year ? 'past' : 'upcoming';
 }
-
